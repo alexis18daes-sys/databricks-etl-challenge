@@ -30,13 +30,15 @@ AI_USAGE.md
 
 ### 1. Local (no Databricks access)
 
-Requirements: Python 3.11, a JDK 17 on your PATH (`java -version`), and on
-Windows the Hadoop `winutils.exe` shim (fetched by the setup script below —
-Delta/Spark's local filesystem calls fail on Windows without it).
+Requirements: Python 3.11. That's it — `scripts/setup_local_env.py` checks
+for a working `java` on `JAVA_HOME`/`PATH` and only downloads a portable
+JDK 17 if none is found (it never touches or replaces one you already
+have), plus the Delta Lake jars and, on Windows, the Hadoop `winutils.exe`
+shim (Delta/Spark's local filesystem calls fail on Windows without it).
 
 ```bash
 pip install -r requirements-dev.txt
-python scripts/setup_local_env.py     # downloads the Delta jars (+ winutils on Windows) into ~/tools
+python scripts/setup_local_env.py     # downloads whatever's missing (JDK/jars/winutils) into ~/tools
 # then export JAVA_HOME / HADOOP_HOME / PATH as printed by the script
 
 python scripts/run_pipeline.py        # Bronze -> Silver -> Gold, end to end
