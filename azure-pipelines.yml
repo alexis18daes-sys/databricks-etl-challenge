@@ -1,0 +1,66 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  pythonVersion: "3.11"
+
+stages:
+  - stage: Test
+    displayName: "Lint & unit tests"
+    jobs:
+      - job: LintAndTest
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(pythonVersion)"
+            displayName: "Use Python $(pythonVersion)"
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements-dev.txt
+            displayName: "Install dependencies"
+
+          - script: |
+              flake8 src tests --max-line-length=120
+            displayName: "Lint (flake8)"
+
+          - script: |
+              black --check src tests
+            displayName: "Formatting check (black)"
+
+          - script: |
+              export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+              python -m pytest tests/ -v --junitxml=test-results.xml
+            displayName: "Run unit tests (pytest + local Spark/Delta)"
+
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFiles: "test-results.xml"
+              testRunTitle: "ETL unit tests"
+
+  - stage: DeployNotebooks
+    displayName: "Deploy to Databricks"
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: DatabricksDeploy
+        steps:
+          - script: |
+              echo "Placeholder deploy step."
+              echo "In a real environment this would, e.g.:"
+              echo "  pip install databricks-cli"
+              echo "  databricks workspace import_dir ./notebooks /Repos/etl_challenge/notebooks --overwrite"
+              echo "  databricks jobs reset --job-id \$(DATABRICKS_JOB_ID) --json-file jobs/hiring_etl_job.json"
+              echo "Requires DATABRICKS_HOST / DATABRICKS_TOKEN configured as pipeline secrets."
+            displayName: "Deploy notebooks/jobs to Databricks (placeholder)"
