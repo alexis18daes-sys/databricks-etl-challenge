@@ -197,8 +197,9 @@ duplicate) = 31. Zero duplicate ids, zero referential-integrity violations.
 
 No code changes are required, only configuration:
 
-1. Import this repo as a **Databricks Repo** (or build/install a wheel from
-   `src/`) so `import src...` resolves on the cluster.
+1. Import this repo as a **Databricks Repo** (Workspace -> Repos -> Add
+   Repo, pointing at the GitHub URL) so it's cloned into the workspace and
+   `import src...` resolves on the cluster exactly like it does locally.
 2. Upload `data/landing` and `data/api` to a Unity Catalog **Volume** (or a
    DBFS mount), e.g. `/Volumes/main/hiring/raw/landing`.
 3. Set `ETL_DATA_ROOT` and `ETL_LAKEHOUSE_ROOT` (env vars, or the widgets in
